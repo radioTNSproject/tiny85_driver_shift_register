@@ -6,6 +6,7 @@
 #define DATA PB0
 #define LATCH PB2
 #define CLOCK PB3
+#define LED PB1
 
 unsigned char push8(unsigned char);
 
@@ -14,6 +15,17 @@ int main(void)
     DDRB |= (1 << DATA);
     DDRB |= (1 << LATCH);
     DDRB |= (1 << CLOCK);
+    DDRB |= (1 << LED);
+
+    // Set Timer 0 prescaler to clock/8.
+    // At 1 MHz this is 125 kHz.
+    TCCR0B |= (1 << CS01) | (1 << CS00);
+
+    // Set to 'Fast PWM' mode
+    TCCR0A |= (1 << WGM01) | (1 << WGM00);
+
+    // Clear OC0B output on compare match, upwards counting.
+    TCCR0A |= (1 << COM0B1);
 
     uint8_t test =0;
     test++;
@@ -21,15 +33,27 @@ int main(void)
     unsigned char sample = 15;
     while(1)
     {
-        sample = 1;
-        for(int i = 0; i <= 7; i++)
+        sample = 0;
+        /*for(int i = 0; i <= 8; i++)
         {
             push8(sample);
             sample = sample*2 + 1; //bar
             //sample++; //incremental
             //sample *= 2; //chenillard
-            _delay_ms(50);
+            _delay_ms(500);
+            OCR0B = i*8;
             
+        }*/
+        
+        for(int i = 0; i <= 255; i++)
+        {
+            OCR0B = i;
+            _delay_ms(2);
+        }
+        for(int i = 255; i != 0; i--)
+        {
+            OCR0B = i;
+            _delay_ms(2);
         }
     }
 return 0;
